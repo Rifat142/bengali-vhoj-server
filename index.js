@@ -11,9 +11,9 @@ app.use(express.json());
 app.use(cors({
   origin:[
     'http://localhost:5173',
-    // 'http://localhost:5173'
+   
     'https://bengali-vhoj.web.app',
-    'https://bengali-vhoj.firebaseapp.com'
+    'https://bengali-vhoj.firebaseapp.com',
   ],
   credentials: true
 }))
@@ -35,16 +35,26 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     //collection
     const foodCollection = client.db("bengaliVhoj").collection("bengali-vhoj");
+    const foodCartCollection = client.db("foodCartdb").collection('foodCart');
 
     app.get("/foods", async (req, res) => {
       const cursor = foodCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    // add a food item in foodCollection
+    app.post('/food', async(req , res)=>{
+      const newProduct = req.body;
+      // console.log(newProduct); 
+      const result = await foodCollection.insertOne(newProduct);
+      res.send(result);
+
+  })
 
     app.get("/foods/:id", async (req, res) => {
       const id = req.params.id;
@@ -53,9 +63,57 @@ async function run() {
       const result = await foodCollection.findOne(query);
       res.send(result);
     });
+    // sending data to cart by post 
+    app.post('/food-cart', async(req,res)=>{
+      const addCartProduct = req.body;
+      const addCart = await foodCartCollection.insertOne(addCartProduct);
+      console.log(addCart);
+      res.send(addCart);
+    });
+      // showing all the booked products with email query
+    app.get('/food-cart', async(req,res)=>{
+      console.log(req.query);
+      let query ={}
+        if(req.query.email){
+           query= {email: req.query.email}
+
+        }
+      const cursor = foodCartCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    // delete from cart 
+    app.delete('/food-cart/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query= {_id : new ObjectId(id)}
+      const result = await foodCartCollection.deleteOne(query);
+      res.send(result);
+    });
+    // find cart data by email
+
+    // app.get('/food-cart', async(req,res)=>{
+    //   // console.log(req.query.email);
+    //   console.log(req.query);
+    //   // let query = {};
+    //   // if(req.query?.email){
+    //   //   query = {email:req.query.email}
+    //   //   // const cursor = foodCartCollection.find(query);
+    //   //   // const result = await cursor.toArray();
+    //   //   // res.send(result);
+        
+    //   // }
+
+    //   const cursor = foodCartCollection.find(query);
+    //     const result = await cursor.toArray();
+    //     res.send(result);
+    // })
+
+
+
+
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
