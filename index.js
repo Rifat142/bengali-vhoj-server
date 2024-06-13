@@ -10,7 +10,7 @@ app.use(express.json());
 // this is a comment i wrote to check vercel 
 app.use(cors({
   origin:[
-    'http://localhost:5173',
+    // 'http://localhost:5173',
    
     'https://bengali-vhoj.web.app',
     'https://bengali-vhoj.firebaseapp.com',
@@ -59,7 +59,27 @@ async function run() {
       res.send(result);
       });
 
-
+        // updating a product
+        app.put('/foods/:id', async(req,res)=>{
+          const id = req.params.id;
+          const filter = {_id : new ObjectId(id)}
+          const options =   {upsert : true}
+          const updatedProduct = req.body;
+          const product ={
+            $set:{
+              name : updatedProduct.name,
+              image : updatedProduct.image   ,
+              category : updatedProduct.category,
+              quantity : updatedProduct.quantity,
+              details : updatedProduct.details,
+              price : updatedProduct.price,
+              made_by : updatedProduct.made_by,
+              short_details : updatedProduct.short_details,
+            }
+          }
+          const result = await foodCollection.updateOne(filter , product , options);
+          res.send(result);
+      }) 
 
 
 
