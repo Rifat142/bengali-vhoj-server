@@ -41,11 +41,28 @@ async function run() {
     const foodCollection = client.db("bengaliVhoj").collection("bengali-vhoj");
     const foodCartCollection = client.db("foodCartdb").collection('foodCart');
 
-    app.get("/foods", async (req, res) => {
-      const cursor = foodCollection.find();
+    // app.get("/foods", async (req, res) => {
+    //   const cursor = foodCollection.find();
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
+
+      // sending the data with email query in added components
+      app.get("/foods", async (req, res) => {
+        let query ={}
+        if(req.query.email){
+           query= {email: req.query.email}
+
+        }
+      const cursor = foodCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
-    });
+      });
+
+
+
+
+
 
     // add a food item in foodCollection
     app.post('/food', async(req , res)=>{
